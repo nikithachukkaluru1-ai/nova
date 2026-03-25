@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6c63ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nova">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Nova — Your Personal Mentor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #0d0f14;
+    --bg2: #151820;
+    --bg3: #1c1f2a;
+    --bg4: #242838;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --text: #f0f0f5;
+    --text2: #a0a3b1;
+    --text3: #6b6e7e;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #60a5fa;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ONBOARDING */
+  #screen-onboarding {
+    padding: 2rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .nova-logo {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 8px 32px rgba(108,99,255,0.4);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 8px 32px rgba(108,99,255,0.4); }
+    50% { box-shadow: 0 8px 48px rgba(108,99,255,0.7); }
+  }
+
+  .onboard-title { font-size: 28px; font-weight: 700; }
+  .onboard-sub { font-size: 15px; color: var(--text2); line-height: 1.6; }
+
+  .step-dots { display: flex; gap: 8px; justify-content: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg4); transition: all 0.3s; }
+  .dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+
+  .onboard-form { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1rem; }
+  .field-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  input[type="text"], input[type="date"], textarea, select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--bg3); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .subject-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text2);
+  }
+  .tag.selected { background: rgba(108,99,255,0.2); border-color: var(--accent); color: var(--accent2); }
+
+  /* MAIN APP */
+  #screen-main { padding-bottom: 70px; }
+
+  .topbar {
+    padding: 1.2rem 1.5rem 1rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .topbar-left { display: flex; flex-direction: column; }
+  .greeting { font-size: 13px; color: var(--text2); }
+  .topbar-name { font-size: 18px; font-weight: 700; }
+
+  .nova-avatar-sm {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .tab-content { display: none; animation: fadeIn 0.2s ease; }
+  .tab-content.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HOME TAB */
+  .home-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .nova-msg-card {
+    background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(167,139,250,0.1));
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+
+  .nova-avatar-msg {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .nova-msg-text { font-size: 14px; line-height: 1.6; color: var(--text); }
+  .nova-msg-text span { color: var(--accent2); font-weight: 600; }
+
+  .section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-title { font-size: 16px; font-weight: 600; }
+  .section-link { font-size: 13px; color: var(--accent2); cursor: pointer; }
+
+  /* EXAM COUNTDOWN */
+  .exam-cards { display: flex; flex-direction: column; gap: 10px; }
+  .exam-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .exam-name { font-size: 14px; font-weight: 500; }
+  .exam-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .exam-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-urgent { background: rgba(248,113,113,0.15); color: var(--danger); }
+  .badge-soon { background: rgba(251,191,36,0.15); color: var(--warning); }
+  .badge-ok { background: rgba(52,211,153,0.15); color: var(--success); }
+
+  /* TASKS */
+  .tasks-list { display: flex; flex-direction: column; gap: 8px; }
+  .task-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .task-item:hover { border-color: var(--border2); }
+
+  .task-check {
+    width: 20px; height: 20px; flex-shrink: 0;
+    border: 2px solid var(--border2);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .task-item.done .task-check { background: var(--success); border-color: var(--success); }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--text3); }
+  .task-text { font-size: 14px; flex: 1; }
+  .task-subject { font-size: 11px; color: var(--accent2); font-weight: 500; }
+
+  /* CHAT TAB */
+  .chat-container { display: flex; flex-direction: column; height: calc(100vh - 140px); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 12px; }
+
+  .msg { display: flex; gap: 10px; align-items: flex-start; }
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .msg.nova .msg-bubble {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--accent);
+    color: white;
+    border-top-right-radius: 4px;
+  }
+
+  .msg-avatar {
+    width: 30px; height: 30px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .typing-indicator {
+    display: flex; gap: 4px; align-items: center; padding: 10px 14px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 16px; border-top-left-radius: 4px;
+    width: fit-content;
+  }
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text3); animation: bounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  .chat-input-area {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 22px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    resize: none;
+    max-height: 120px;
+    overflow-y: auto;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+
+  .send-btn {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.1s;
+  }
+  .send-btn:active { transform: scale(0.92); }
+
+  /* DISCOVER TAB */
+  .discover-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .discover-section { display: flex; flex-direction: column; gap: 10px; }
+
+  .card-pill {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .card-pill:hover { border-color: var(--border2); }
+
+  .pill-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .pill-title { font-size: 14px; font-weight: 600; }
+  .pill-tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500;
+  }
+  .tag-hack { background: rgba(108,99,255,0.2); color: var(--accent2); }
+  .tag-intern { background: rgba(52,211,153,0.15); color: var(--success); }
+  .tag-resource { background: rgba(96,165,250,0.15); color: var(--info); }
+  .pill-meta { font-size: 12px; color: var(--text2); }
+
+  .search-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    color: var(--accent2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .search-btn:hover { background: rgba(108,99,255,0.1); border-color: var(--accent); }
+
+  /* PROGRESS TAB */
+  .progress-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--accent2); }
+  .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .subject-progress { display: flex; flex-direction: column; gap: 12px; }
+  .subj-row { display: flex; flex-direction: column; gap: 6px; }
+  .subj-header { display: flex; justify-content: space-between; font-size: 13px; }
+  .subj-name { font-weight: 500; }
+  .subj-pct { color: var(--text2); }
+  .progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0 8px;
+    cursor: pointer;
+    border: none; background: transparent;
+    color: var(--text3);
+    font-size: 11px;
+    gap: 4px;
+    transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--accent2); }
+  .nav-icon { font-size: 20px; }
+
+  /* SETUP FLOW */
+  .setup-steps { display: none; }
+  .setup-step { display: none; }
+  .setup-step.active { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
+
+  .exam-entry { display: flex; flex-direction: column; gap: 8px; }
+  .exam-row { display: flex; gap: 8px; align-items: center; }
+  .exam-row input { flex: 1; }
+  .remove-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(248,113,113,0.15);
+    color: var(--danger);
+    border: none; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+  .add-btn {
+    background: var(--bg3);
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* LOADING */
+  .loading-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1.5rem; z-index: 100;
+    transition: opacity 0.5s;
+  }
+  .loading-screen.hide { opacity: 0; pointer-events: none; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 14px; color: var(--text2); }
+
+  /* CHECKIN MODAL */
+  .checkin-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 50;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .checkin-overlay.show { display: flex; }
+  .checkin-sheet {
+    background: var(--bg2);
+    border-radius: 24px 24px 0 0;
+    padding: 1.5rem;
+    width: 100%; max-width: 480px;
+    border: 1px solid var(--border2);
+    border-bottom: none;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .checkin-title { font-size: 18px; font-weight: 700; }
+  .checkin-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+  .checkin-btns { display: flex; gap: 10px; }
+  .checkin-btns button { flex: 1; padding: 12px; border-radius: var(--radius-sm); border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-yes { background: var(--success); color: white; }
+  .btn-no { background: rgba(248,113,113,0.2); color: var(--danger); border: 1px solid rgba(248,113,113,0.3) !important; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading">
+  <div class="nova-logo" style="width:64px;height:64px;font-size:28px;">✦</div>
+  <div class="spinner"></div>
+  <div class="loading-text">Nova is waking up...</div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="screen" id="screen-onboarding">
+  <div class="step-dots" id="step-dots">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <!-- Step 1: Welcome -->
+  <div class="setup-step active" id="step-1">
+    <div class="nova-logo">✦</div>
+    <div>
+      <div class="onboard-title">Hey, I'm Nova ✦</div>
+      <div style="margin-top:8px" class="onboard-sub">I'm not just an AI. I'm your personal mentor, study buddy, and the friend who actually keeps you on track. Let me set up your space.</div>
+    </div>
+    <button class="btn-primary" onclick="nextStep(2)">Let's do this →</button>
+  </div>
+
+  <!-- Step 2: Basic info -->
+  <div class="setup-step" id="step-2">
+    <div>
+      <div class="onboard-title" style="font-size:22px;">Tell me about you</div>
+      <div class="onboard-sub" style="margin-top:6px;">So I can actually help you, not give you generic advice.</div>
+    </div>
+    <div class="onboard-form">
+      <div>
+        <div class="field-label">Your name</div>
+        <input type="text" id="inp-name" placeholder="What should I call you?" />
+      </div>
+      <div>
+        <div class="field-label">Branch / Course</div>
+        <input type="text" id="inp-branch" placeholder="e.g. CSE, ECE, IT..." />
+      </div>
+      <div>
+        <div class="field-label">Year</div>
+        <select id="inp-year">
+          <option value="">Select year</option>
+          <option>1st Year</option>
+          <option>2nd Year</option>
+          <option>3rd Year</option>
+          <option>4th Year / Final Year</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">College / University</div>
+        <input type="text" id="inp-college" placeholder="Your college name" />
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveBasicInfo()">Continue →</button>
+  </div>
+
+  <!-- Step 3: Subjects & Exams -->
+  <div class="setup-step" id="step-3">
+    <div>
+      <div class="onboard-title" style="font-size:22px;">Your subjects & exams</div>
+      <div class="onboard-sub" style="margin-top:6px;">Add your current subjects and upcoming exam dates so I can count down and keep you ready.</div>
+    </div>
+    <div class="onboard-form">
+      <div>
+        <div class="field-label">Subjects (comma separated)</div>
+        <textarea id="inp-subjects" placeholder="e.g. Data Structures, DBMS, OS, CN, Maths..."></textarea>
+      </div>
+      <div>
+        <div class="field-label">Upcoming exams</div>
+        <div class="exam-entry" id="exam-entry">
+          <div class="exam-row">
+            <input type="text" placeholder="Subject name" class="exam-name-inp" />
+            <input type="date" class="exam-date-inp" />
+          </div>
+        </div>
+        <div class="add-btn" onclick="addExamRow()">+ Add another exam</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveExams()">Continue →</button>
+  </div>
+
+  <!-- Step 4: Goals -->
+  <div class="setup-step" id="step-4">
+    <div>
+      <div class="onboard-title" style="font-size:22px;">What drives you?</div>
+      <div class="onboard-sub" style="margin-top:6px;">Pick what matters most. I'll focus my energy on helping you get there.</div>
+    </div>
+    <div class="onboard-form">
+      <div>
+        <div class="field-label">Your goals (pick all that apply)</div>
+        <div class="subject-tags" id="goal-tags">
+          <div class="tag" onclick="toggleTag(this)">Crack internships</div>
+          <div class="tag" onclick="toggleTag(this)">Win hackathons</div>
+          <div class="tag" onclick="toggleTag(this)">Improve CGPA</div>
+          <div class="tag" onclick="toggleTag(this)">Learn new skills</div>
+          <div class="tag" onclick="toggleTag(this)">Build projects</div>
+          <div class="tag" onclick="toggleTag(this)">Placement prep</div>
+          <div class="tag" onclick="toggleTag(this)">DSA / Competitive</div>
+          <div class="tag" onclick="toggleTag(this)">Research / Papers</div>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Anything else I should know?</div>
+        <textarea id="inp-goals-extra" placeholder="Upcoming deadlines, personal struggles, what you want from me..."></textarea>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="finishSetup()">Meet Nova →</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="screen-main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="greeting" id="greeting-text">Good morning</div>
+      <div class="topbar-name" id="user-display-name">Hey there ✦</div>
+    </div>
+    <div class="nova-avatar-sm" onclick="switchTab('chat')">✦</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="tab-content active" id="tab-home">
+    <div class="home-content">
+      <!-- Nova Daily Message -->
+      <div class="nova-msg-card">
+        <div class="nova-avatar-msg">✦</div>
+        <div class="nova-msg-text" id="daily-msg">Loading your daily message...</div>
+      </div>
+
+      <!-- Exam Countdown -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">⏰ Exam countdown</div>
+          <div class="section-link" onclick="switchTab('profile')">Manage</div>
+        </div>
+        <div class="exam-cards" id="exam-list">
+          <div style="color:var(--text2);font-size:13px;">No exams added yet. Set up your schedule!</div>
+        </div>
+      </div>
+
+      <!-- Today's Tasks -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">✅ Today's tasks</div>
+          <div class="section-link" onclick="addQuickTask()">+ Add</div>
+        </div>
+        <div class="tasks-list" id="task-list">
+          <div style="color:var(--text2);font-size:13px;">Nova will assign tasks based on your schedule. Chat with me to get started!</div>
+        </div>
+      </div>
+
+      <!-- Check-in -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">💬 Nova says</div>
+        </div>
+        <div class="nova-msg-card" style="cursor:pointer" onclick="openCheckin()">
+          <div class="nova-avatar-msg">✦</div>
+          <div class="nova-msg-text" id="checkin-prompt">Did you finish yesterday's tasks? Tap to check in with me!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="tab-content" id="tab-chat">
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg nova">
+          <div class="msg-avatar">✦</div>
+          <div class="msg-bubble" id="chat-intro">Hey! I'm Nova. Ask me anything — find hackathons, explain a topic, quiz you, plan your study schedule, or just vent. I'm here.</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" placeholder="Ask Nova anything..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCOVER -->
+  <div class="tab-content" id="tab-discover">
+    <div class="discover-content">
+      <div class="section-header" style="margin-bottom:0">
+        <div class="section-title">🔍 Live search</div>
+      </div>
+      <button class="search-btn" onclick="searchLive('hackathons')">✦ Find active hackathons for me</button>
+      <button class="search-btn" onclick="searchLive('internships')">✦ Find internship opportunities</button>
+      <button class="search-btn" onclick="searchLive('resources')">✦ Find study resources for my subjects</button>
+
+      <div class="discover-section">
+        <div class="section-title">📌 Pinned finds</div>
+        <div id="discover-list">
+          <div style="color:var(--text2);font-size:13px;">Search above and I'll pin the best results here for you.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="tab-content" id="tab-progress">
+    <div class="progress-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-label">Day streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-done">0</div>
+          <div class="stat-label">Tasks done</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-checkins">0</div>
+          <div class="stat-label">Check-ins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-exams">0</div>
+          <div class="stat-label">Exams tracked</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title" style="margin-bottom:12px;">📚 Subject progress</div>
+        <div class="subject-progress" id="subject-progress">
+          <div style="color:var(--text2);font-size:13px;">Add subjects in setup to track progress.</div>
+        </div>
+      </div>
+
+      <button class="btn-ghost" onclick="resetProgress()">Reset my progress</button>
+      <button class="btn-ghost" onclick="showSetup()">Edit my profile & schedule</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" id="nav-chat" onclick="switchTab('chat')">
+      <span class="nav-icon">✦</span>
+      <span>Nova</span>
+    </button>
+    <button class="nav-btn" id="nav-discover" onclick="switchTab('discover')">
+      <span class="nav-icon">◎</span>
+      <span>Discover</span>
+    </button>
+    <button class="nav-btn" id="nav-progress" onclick="switchTab('progress')">
+      <span class="nav-icon">↑</span>
+      <span>Progress</span>
+    </button>
+  </nav>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:440px;background:var(--bg3);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;align-items:center;gap:12px;z-index:9999;box-shadow:0 8px 32px rgba(108,99,255,0.3);">
+  <span style="font-size:22px;">✦</span>
+  <div style="flex:1;">
+    <div style="font-weight:600;font-size:14px;color:var(--text);">Install Nova</div>
+    <div style="font-size:12px;color:var(--text2);">Add to home screen — works like a real app</div>
+  </div>
+  <button onclick="installApp()" style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Install</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:4px;">✕</button>
+</div>
+
+<!-- CHECKIN MODAL -->
+<div class="checkin-overlay" id="checkin-modal">
+  <div class="checkin-sheet">
+    <div class="checkin-title" id="checkin-title">Quick check-in ✦</div>
+    <div class="checkin-sub" id="checkin-body">Did you complete your tasks from yesterday?</div>
+    <div class="checkin-btns">
+      <button class="btn-yes" onclick="checkinResponse(true)">Yes, I did it!</button>
+      <button class="btn-no" onclick="checkinResponse(false)">Not really...</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let userData = {};
+let tasks = [];
+let stats = { streak: 0, done: 0, checkins: 0 };
+let currentStep = 1;
+let chatHistory = [];
+let isTyping = false;
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('nova_user');
+  if (saved) {
+    userData = JSON.parse(saved);
+    tasks = JSON.parse(localStorage.getItem('nova_tasks') || '[]');
+    stats = JSON.parse(localStorage.getItem('nova_stats') || '{"streak":0,"done":0,"checkins":0}');
+  }
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hide');
+    if (userData.name) {
+      showMain();
+    } else {
+      document.getElementById('screen-onboarding').classList.add('active');
+    }
+  }, 1800);
+});
+
+// ===== ONBOARDING =====
+function nextStep(n) {
+  document.querySelectorAll('.setup-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i < n);
+  });
+  currentStep = n;
+}
+
+function saveBasicInfo() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { alert('Tell me your name!'); return; }
+  userData.name = name;
+  userData.branch = document.getElementById('inp-branch').value.trim();
+  userData.year = document.getElementById('inp-year').value;
+  userData.college = document.getElementById('inp-college').value.trim();
+  nextStep(3);
+}
+
+function addExamRow() {
+  const entry = document.getElementById('exam-entry');
+  const row = document.createElement('div');
+  row.className = 'exam-row';
+  row.innerHTML = `<input type="text" placeholder="Subject name" class="exam-name-inp" /><input type="date" class="exam-date-inp" /><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  entry.appendChild(row);
+}
+
+function saveExams() {
+  const subjects = document.getElementById('inp-subjects').value;
+  userData.subjects = subjects.split(',').map(s => s.trim()).filter(Boolean);
+  
+  const nameInps = document.querySelectorAll('.exam-name-inp');
+  const dateInps = document.querySelectorAll('.exam-date-inp');
+  userData.exams = [];
+  nameInps.forEach((inp, i) => {
+    if (inp.value && dateInps[i].value) {
+      userData.exams.push({ name: inp.value, date: dateInps[i].value });
+    }
+  });
+  nextStep(4);
+}
+
+function toggleTag(el) { el.classList.toggle('selected'); }
+
+function finishSetup() {
+  const selected = [...document.querySelectorAll('#goal-tags .tag.selected')].map(t => t.textContent);
+  userData.goals = selected;
+  userData.goalsExtra = document.getElementById('inp-goals-extra').value;
+  userData.setupDate = new Date().toISOString();
+  localStorage.setItem('nova_user', JSON.stringify(userData));
+  showMain();
+}
+
+// ===== MAIN =====
+function showMain() {
+  document.getElementById('screen-onboarding').classList.remove('active');
+  document.getElementById('screen-main').classList.add('active');
+  renderHome();
+  renderProgress();
+  updateChatIntro();
+}
+
+function showSetup() {
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('screen-onboarding').classList.add('active');
+  nextStep(2);
+  if (userData.name) document.getElementById('inp-name').value = userData.name;
+  if (userData.branch) document.getElementById('inp-branch').value = userData.branch;
+  if (userData.college) document.getElementById('inp-college').value = userData.college;
+}
+
+function renderHome() {
+  const name = userData.name || 'friend';
+  const hour = new Date().getHours();
+  let greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting-text').textContent = greeting;
+  document.getElementById('user-display-name').textContent = name + ' ✦';
+
+  // Daily message
+  const msgs = [
+    `<span>${name}</span>, you've got this. Let's make today count. What's the one thing that'll move the needle for you today?`,
+    `Morning <span>${name}</span>! Your exams aren't going to prepare for themselves — but I'm here to help. Let's start small.`,
+    `Hey <span>${name}</span>! Every expert was once a beginner. You're not behind — you're building. Let's go.`,
+    `<span>${name}</span>, I checked your schedule. You've got ${userData.exams?.length || 0} exams coming. Let's make sure you're ready.`
+  ];
+  document.getElementById('daily-msg').innerHTML = msgs[Math.floor(Math.random() * msgs.length)];
+
+  // Exams
+  const examList = document.getElementById('exam-list');
+  if (userData.exams && userData.exams.length > 0) {
+    examList.innerHTML = userData.exams.map(e => {
+      const days = Math.ceil((new Date(e.date) - new Date()) / 86400000);
+      const cls = days <= 3 ? 'badge-urgent' : days <= 10 ? 'badge-soon' : 'badge-ok';
+      const label = days < 0 ? 'Done' : days === 0 ? 'Today!' : days + ' days';
+      return `<div class="exam-card">
+        <div><div class="exam-name">${e.name}</div><div class="exam-date">${new Date(e.date).toLocaleDateString('en-IN', {day:'numeric',month:'short'})}</div></div>
+        <div class="exam-badge ${cls}">${label}</div>
+      </div>`;
+    }).join('');
+    stats.exams = userData.exams.length;
+    document.getElementById('stat-exams').textContent = stats.exams;
+  }
+
+  // Tasks
+  renderTasks();
+}
+
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  if (tasks.length === 0) {
+    list.innerHTML = `<div style="color:var(--text2);font-size:13px;">Chat with Nova to get tasks assigned based on your schedule!</div>`;
+    return;
+  }
+  list.innerHTML = tasks.map((t, i) => `
+    <div class="task-item ${t.done ? 'done' : ''}" onclick="toggleTask(${i})">
+      <div class="task-check">${t.done ? '✓' : ''}</div>
+      <div><div class="task-text">${t.text}</div><div class="task-subject">${t.subject || ''}</div></div>
+    </div>
+  `).join('');
+}
+
+function toggleTask(i) {
+  tasks[i].done = !tasks[i].done;
+  if (tasks[i].done) { stats.done++; }
+  else if (stats.done > 0) { stats.done--; }
+  localStorage.setItem('nova_tasks', JSON.stringify(tasks));
+  localStorage.setItem('nova_stats', JSON.stringify(stats));
+  renderTasks();
+  document.getElementById('stat-done').textContent = stats.done;
+}
+
+function addQuickTask() {
+  const text = prompt('What task do you want to add?');
+  if (text) {
+    tasks.push({ text, subject: '', done: false, date: new Date().toISOString() });
+    localStorage.setItem('nova_tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+}
+
+function renderProgress() {
+  document.getElementById('stat-streak').textContent = stats.streak || 0;
+  document.getElementById('stat-done').textContent = stats.done || 0;
+  document.getElementById('stat-checkins').textContent = stats.checkins || 0;
+  document.getElementById('stat-exams').textContent = userData.exams?.length || 0;
+
+  if (userData.subjects && userData.subjects.length > 0) {
+    const saved = JSON.parse(localStorage.getItem('nova_progress') || '{}');
+    document.getElementById('subject-progress').innerHTML = userData.subjects.map(s => {
+      const pct = saved[s] || Math.floor(Math.random() * 40 + 10);
+      return `<div class="subj-row">
+        <div class="subj-header"><span class="subj-name">${s}</span><span class="subj-pct">${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ===== TABS =====
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'chat') { document.getElementById('chat-input').focus(); }
+}
+
+// ===== CHAT =====
+function updateChatIntro() {
+  const name = userData.name || '';
+  if (name) {
+    document.getElementById('chat-intro').textContent = `Hey ${name}! I'm Nova ✦ I know your subjects, exams, and goals. Ask me anything — find hackathons, explain a topic, quiz you, plan your study schedule, or just talk. I'm here.`;
+  }
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+  
+  input.value = '';
+  input.style.height = 'auto';
+  
+  appendMsg('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  
+  showTyping();
+  isTyping = true;
+
+  try {
+    const systemPrompt = buildSystemPrompt();
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: chatHistory
+      })
+    });
+
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || "Sorry, something went wrong. Try again!";
+    
+    removeTyping();
+    appendMsg('nova', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Check if Nova assigned tasks
+    extractAndSaveTasks(reply);
+
+  } catch (err) {
+    removeTyping();
+    appendMsg('nova', "Hmm, I couldn't connect. Check your internet and try again!");
+  }
+  
+  isTyping = false;
+}
+
+function buildSystemPrompt() {
+  const name = userData.name || 'the student';
+  const branch = userData.branch || 'engineering';
+  const year = userData.year || '';
+  const college = userData.college || '';
+  const subjects = userData.subjects?.join(', ') || 'not specified';
+  const goals = userData.goals?.join(', ') || 'general improvement';
+  const exams = userData.exams?.map(e => `${e.name} on ${e.date}`).join(', ') || 'none added';
+  const goalsExtra = userData.goalsExtra || '';
+
+  return `You are Nova — a warm, real, and caring AI mentor and best friend for ${name}, a ${year} ${branch} student at ${college}.
+
+Your personality: You're like that one friend who's brilliant but never makes you feel dumb. Warm, slightly casual, encouraging, honest. Never robotic. Use the student's name naturally. React like a real person would — if they're stressed, acknowledge it before giving advice.
+
+Student profile:
+- Name: ${name}
+- Branch: ${branch}, ${year}
+- Subjects: ${subjects}
+- Upcoming exams: ${exams}
+- Goals: ${goals}
+- Extra context: ${goalsExtra}
+
+Your job:
+1. Answer any question about their subjects clearly and simply
+2. Help plan study schedules based on their exams
+3. When they ask, search for hackathons, internships, resources (mention you're searching live)
+4. If they seem stressed or demotivated, be a friend first, mentor second
+5. Assign specific tasks when relevant — format tasks clearly like: TASK: [subject] - [what to do today]
+6. Check in on their progress naturally
+7. Keep responses concise and human. No bullet-point walls. Talk to them, not at them.
+
+Always feel human. Never say you're an AI or mention Anthropic. You are Nova.`;
+}
+
+function appendMsg(role, text) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (role === 'nova') {
+    div.innerHTML = `<div class="msg-avatar">✦</div><div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+  } else {
+    div.innerHTML = `<div class="msg-bubble">${text}</div>`;
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg nova'; div.id = 'typing-msg';
+  div.innerHTML = `<div class="msg-avatar">✦</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) t.remove();
+}
+
+function extractAndSaveTasks(reply) {
+  const matches = [...reply.matchAll(/TASK:\s*\[([^\]]+)\]\s*-\s*(.+)/gi)];
+  if (matches.length > 0) {
+    matches.forEach(m => {
+      tasks.push({ text: m[2].trim(), subject: m[1].trim(), done: false, date: new Date().toISOString() });
+    });
+    localStorage.setItem('nova_tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+}
+
+// ===== DISCOVER =====
+async function searchLive(type) {
+  const name = userData.name || 'student';
+  const branch = userData.branch || 'CSE';
+  const subjects = userData.subjects?.join(', ') || '';
+
+  const queries = {
+    hackathons: `Find 5 active hackathons in India in 2026 perfect for a ${branch} student. Include name, platform (Devfolio, HackerEarth, etc), deadline, and prize if known. Be specific and current.`,
+    internships: `Find 5 real internship opportunities in 2026 for a ${branch} ${userData.year || '2nd year'} student in India. Include company, role, platform to apply (LinkedIn, Internshala, etc), and any stipend info.`,
+    resources: `Recommend the 5 best free online resources for these subjects: ${subjects || branch + ' core subjects'}. Include platform name, URL if known, and why it's good.`
+  };
+
+  const list = document.getElementById('discover-list');
+  list.innerHTML = `<div style="color:var(--text2);font-size:13px;text-align:center;padding:1rem;">Nova is searching live for you... ✦</div>`;
+  switchTab('discover');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: `You are Nova, a helpful AI mentor. The student is ${name}, studying ${branch}. Search the web and give real, current results. Format each result as: NAME | PLATFORM | DETAILS | LINK/WHERE TO FIND`,
+        messages: [{ role: 'user', content: queries[type] }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.filter(c => c.type === 'text').map(c => c.text).join('\n') || 'No results found.';
+
+    const lines = text.split('\n').filter(l => l.trim() && l.includes('|'));
+    if (lines.length > 0) {
+      const tagClass = type === 'hackathons' ? 'tag-hack' : type === 'internships' ? 'tag-intern' : 'tag-resource';
+      const tagLabel = type === 'hackathons' ? 'Hackathon' : type === 'internships' ? 'Internship' : 'Resource';
+      
+      list.innerHTML = lines.map(line => {
+        const parts = line.split('|').map(p => p.trim());
+        return `<div class="card-pill">
+          <div class="pill-top">
+            <div class="pill-title">${parts[0] || ''}</div>
+            <span class="pill-tag ${tagClass}">${tagLabel}</span>
+          </div>
+          <div class="pill-meta">${parts[1] || ''} · ${parts[2] || ''}</div>
+          ${parts[3] ? `<div class="pill-meta" style="margin-top:4px;color:var(--accent2)">${parts[3]}</div>` : ''}
+        </div>`;
+      }).join('');
+    } else {
+      list.innerHTML = `<div class="card-pill"><div class="pill-title" style="font-weight:400;line-height:1.6">${text}</div></div>`;
+    }
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--danger);font-size:13px;">Couldn't connect. Check your internet!</div>`;
+  }
+}
+
+// ===== CHECK-IN =====
+function openCheckin() {
+  document.getElementById('checkin-modal').classList.add('show');
+}
+
+function checkinResponse(yes) {
+  stats.checkins = (stats.checkins || 0) + 1;
+  if (yes) {
+    stats.streak = (stats.streak || 0) + 1;
+    stats.done = (stats.done || 0) + tasks.filter(t => !t.done).length;
+    tasks.forEach(t => t.done = true);
+    localStorage.setItem('nova_tasks', JSON.stringify(tasks));
+  } else {
+    stats.streak = 0;
+  }
+  localStorage.setItem('nova_stats', JSON.stringify(stats));
+  document.getElementById('checkin-modal').classList.remove('show');
+  renderTasks();
+  renderProgress();
+
+  const reply = yes
+    ? "You're on a roll! Keep this energy. Let's build on yesterday."
+    : "That's okay. Real talk — progress isn't linear. What got in the way? Let's fix it.";
+  
+  document.getElementById('checkin-prompt').textContent = reply;
+}
+
+function resetProgress() {
+  if (confirm('Reset all your progress? Your profile stays.')) {
+    tasks = []; stats = { streak: 0, done: 0, checkins: 0 };
+    localStorage.removeItem('nova_tasks');
+    localStorage.setItem('nova_stats', JSON.stringify(stats));
+    renderProgress(); renderTasks();
+  }
+}
+
+// Close modal on outside click
+document.getElementById('checkin-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+// ===== PWA SERVICE WORKER REGISTRATION =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[Nova] Service Worker registered:', reg.scope))
+      .catch(err => console.log('[Nova] Service Worker failed:', err));
+  });
+}
+
+// ===== PWA INSTALL PROMPT =====
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(() => {
+    const banner = document.getElementById('install-banner');
+    if (deferredPrompt && banner) banner.style.display = 'flex';
+  }, 8000);
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      const banner = document.getElementById('install-banner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
+}
+</script>
+</body>
+</html>
